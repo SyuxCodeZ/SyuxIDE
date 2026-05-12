@@ -2,29 +2,41 @@ let terminal;
 let fitAddon;
 
 function initTerminal() {
-  fitAddon = new FitAddon.FitAddon();
+  try {
+    if (typeof Terminal === 'undefined') {
+      console.error('xterm.js not loaded');
+      return;
+    }
+    if (typeof FitAddon === 'undefined') {
+      console.error('xterm-addon-fit not loaded');
+    }
 
-  terminal = new Terminal({
-    fontSize: 13,
-    fontFamily: 'Cascadia Code, Fira Code, Consolas, monospace',
-    theme: {
-      background: '#1e1e1e',
-      foreground: '#d4d4d4',
-      cursor: '#aeafad',
-      selectionBackground: '#264f78'
-    },
-    cursorBlink: true,
-    cursorStyle: 'block',
-    allowTransparency: false,
-    scrollback: 10000
-  });
+    fitAddon = new FitAddon();
 
-  terminal.loadAddon(fitAddon);
-  terminal.open(document.getElementById('terminal-container'));
-  fitAddon.fit();
+    terminal = new Terminal({
+      fontSize: 13,
+      fontFamily: 'Cascadia Code, Fira Code, Consolas, monospace',
+      theme: {
+        background: '#1e1e1e',
+        foreground: '#d4d4d4',
+        cursor: '#aeafad',
+        selectionBackground: '#264f78'
+      },
+      cursorBlink: true,
+      cursorStyle: 'block',
+      allowTransparency: false,
+      scrollback: 10000
+    });
 
-  terminal.write('SYUX IDE Terminal v0.1.0\r\n');
-  terminal.write('Ready. Write code and click Run.\r\n\r\n');
+    terminal.loadAddon(fitAddon);
+    terminal.open(document.getElementById('terminal-container'));
+    fitAddon.fit();
+
+    terminal.write('SYUX IDE Terminal v0.1.0\r\n');
+    terminal.write('Ready. Write code and click Run.\r\n\r\n');
+  } catch (e) {
+    console.error('Terminal init failed:', e);
+  }
 }
 
 function writeToTerminal(text, isError) {
