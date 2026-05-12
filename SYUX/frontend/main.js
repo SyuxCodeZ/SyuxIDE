@@ -1,29 +1,37 @@
-const { app, BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const net = require('net');
+const fs = require('fs');
 
 let backendProcess;
 
 function startBackend() {
   return new Promise((resolve) => {
     const backendDir = path.join(__dirname, '..', 'backend');
-    console.log(`Starting backend in ${backendDir}...`);
+    const serverPath = path.join(backendDir, 'syux-server.exe');
 
-    backendProcess = spawn('go', ['run', '.'], {
+    if (!fs.existsSync(serverPath)) {
+      console.error(`Backend binary not found at ${serverPath}`);
+      resolve(false);
+      return;
+    }
+
+    console.log(`Starting backend: ${serverPath}`);
+    backendProcess = spawn(serverPath, [], {
       cwd: backendDir,
       stdio: ['ignore', 'pipe', 'pipe'],
-      shell: true
+      shell: false
     });
 
     backendProcess.stdout.on('data', (d) => process.stdout.write(`[backend] ${d}`));
     backendProcess.stderr.on('data', (d) => process.stderr.write(`[backend] ${d}`));
-    backendProcess.on('error', (err) => console.error('Backend spawn failed:', err));
+    backendProcess.on('error', (err) => console.error('Backend error:', err.message));
     backendProcess.on('exit', (code) => console.log(`Backend exited (${code})`));
 
-    waitForPort(9090, '127.0.0.1', 20000)
+    waitForPort(9090, '127.0.0.1', 10000)
       .then(() => { console.log('Backend ready'); resolve(true); })
-      .catch(() => { console.log('Backend not detected, continuing anyway'); resolve(false); });
+      .catch(() => { console.log('Backend not detected'); resolve(false); });
   });
 }
 
@@ -53,8 +61,9 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false,
-      webSecurity: false
+          nodeIntegration: false,
+          webSecurity: false,
+          allowFileAccess: true
     }
   });
 

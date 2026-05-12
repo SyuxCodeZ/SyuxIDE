@@ -36,7 +36,13 @@ document.addEventListener('DOMContentLoaded', function () {
     writeToTerminal(`[${language.toUpperCase()}] Running...\r\n`);
 
     try {
-      const result = await window.syuxAPI.runCode(code, language, input);
+      const res = await fetch('http://127.0.0.1:9090/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, language, input })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      const result = await res.json();
 
       writeToTerminal('\r\n');
 
@@ -57,9 +63,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
       writeToTerminal('\r\n');
     } catch (err) {
-      writeToTerminal(`\r\nError: Could not reach backend.\r\nMake sure the Go server is running on port 9090.\r\n`, true);
-      writeToTerminal(`Details: ${err.message}\r\n`, true);
-      statusEl.textContent = 'Connection Error';
+      writeToTerminal(`\r\n--- ERROR ---\r\n`, true);
+      writeToTerminal(`${err.toString()}\r\n`, true);
+      if (!window.syuxAPI) {
+        writeToTerminal(`\r\nCause: window.syuxAPI is undefined (preload may have failed)\r\n`, true);
+      }
+      if (err.message && err.message.includes('ECONNREFUSED')) {
+        writeToTerminal(`\r\nThe Go backend is not running on port 9090.\r\n`, true);
+        writeToTerminal(`If auto-start failed, run manually: cd backend && go run .\r\n`, true);
+      }
+      statusEl.textContent = 'Error';
     } finally {
       runBtn.disabled = false;
     }

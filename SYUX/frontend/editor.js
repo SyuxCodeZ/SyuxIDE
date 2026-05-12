@@ -2,7 +2,7 @@ let editor;
 
 function initEditor() {
   require.config({
-    paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs' }
+    paths: { vs: '../node_modules/monaco-editor/min/vs' }
   });
 
   require(['vs/editor/editor.main'], function () {
