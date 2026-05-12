@@ -4,7 +4,7 @@
   "main": "frontend/main.js",
   "scripts": {
     "start": "electron .",
-    "start:backend": "go run ./backend/",
+    "start:backend": "cd backend && go run .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	workspaceDir = "./workspace/temp"
+	workspaceDir = "../workspace/temp"
 	cppTimeout   = 10 * time.Second
 	goTimeout    = 15 * time.Second
 )
