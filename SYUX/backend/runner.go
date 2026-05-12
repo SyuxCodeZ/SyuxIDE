@@ -12,10 +12,21 @@ import (
 )
 
 const (
-	workspaceDir = "../workspace/temp"
+	relWorkspace = "../workspace/temp"
 	cppTimeout   = 10 * time.Second
 	goTimeout    = 15 * time.Second
 )
+
+var workspaceDir string
+
+func init() {
+	abs, err := filepath.Abs(relWorkspace)
+	if err != nil {
+		workspaceDir = relWorkspace
+	} else {
+		workspaceDir = abs
+	}
+}
 
 func RunCode(req RunRequest) RunResponse {
 	if req.Language != "cpp" && req.Language != "go" {
@@ -63,6 +74,10 @@ func runCpp(code, input string) RunResponse {
 			Success: false,
 			Error:   "Compilation failed:\n" + string(compileOut),
 		}
+	}
+
+	if _, err := os.Stat(outputPath); err != nil {
+		return RunResponse{Success: false, Error: "Compilation produced no output file"}
 	}
 
 	runCtx, cancel := context.WithTimeout(context.Background(), cppTimeout)
