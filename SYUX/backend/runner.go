@@ -1,16 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 const (
-	workspaceDir = "../workspace/temp"
+	workspaceDir = "./workspace/temp"
 	cppTimeout   = 10 * time.Second
 	goTimeout    = 15 * time.Second
 )
@@ -32,15 +34,15 @@ func RunCode(req RunRequest) RunResponse {
 
 	switch req.Language {
 	case "cpp":
-		return runCpp(req.Code)
+		return runCpp(req.Code, req.Input)
 	case "go":
-		return runGo(req.Code)
+		return runGo(req.Code, req.Input)
 	}
 
 	return RunResponse{Success: false, Error: "Unknown error"}
 }
 
-func runCpp(code string) RunResponse {
+func runCpp(code, input string) RunResponse {
 	sourcePath := filepath.Join(workspaceDir, "main.cpp")
 	outputPath := filepath.Join(workspaceDir, "main.exe")
 
@@ -68,25 +70,38 @@ func runCpp(code string) RunResponse {
 
 	runCmd := exec.CommandContext(runCtx, outputPath)
 	runCmd.Dir = workspaceDir
-	stdout, err := runCmd.Output()
-	if err != nil {
-		if runCtx.Err() == context.DeadlineExceeded {
-			return RunResponse{Success: false, Error: "Execution timed out (possible infinite loop)"}
-		}
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return RunResponse{
-				Success: false,
-				Output:  string(stdout),
-				Error:   string(exitErr.Stderr),
-			}
-		}
-		return RunResponse{Success: false, Error: err.Error()}
+
+	var stdout, stderr bytes.Buffer
+	runCmd.Stdout = &stdout
+	runCmd.Stderr = &stderr
+	if strings.TrimSpace(input) != "" {
+		runCmd.Stdin = strings.NewReader(input)
 	}
 
-	return RunResponse{Success: true, Output: string(stdout)}
+	err = runCmd.Run()
+	if err != nil {
+		if runCtx.Err() == context.DeadlineExceeded {
+			msg := "Execution timed out (possible infinite loop)"
+			if strings.TrimSpace(input) == "" {
+				msg += ". Your program may be waiting for input (stdin). Type input in the input box below the terminal."
+			}
+			return RunResponse{
+				Success: false,
+				Output:  stdout.String(),
+				Error:   msg,
+			}
+		}
+		return RunResponse{
+			Success: false,
+			Output:  stdout.String(),
+			Error:   stderr.String(),
+		}
+	}
+
+	return RunResponse{Success: true, Output: stdout.String()}
 }
 
-func runGo(code string) RunResponse {
+func runGo(code, input string) RunResponse {
 	sourcePath := filepath.Join(workspaceDir, "main.go")
 
 	if err := os.WriteFile(sourcePath, []byte(code), 0644); err != nil {
@@ -98,13 +113,33 @@ func runGo(code string) RunResponse {
 
 	cmd := exec.CommandContext(ctx, "go", "run", sourcePath)
 	cmd.Dir = workspaceDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			return RunResponse{Success: false, Error: "Execution timed out (possible infinite loop)"}
-		}
-		return RunResponse{Success: false, Error: string(output)}
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if strings.TrimSpace(input) != "" {
+		cmd.Stdin = strings.NewReader(input)
 	}
 
-	return RunResponse{Success: true, Output: string(output)}
+	err := cmd.Run()
+	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			msg := "Execution timed out (possible infinite loop)"
+			if strings.TrimSpace(input) == "" {
+				msg += ". Your program may be waiting for input (stdin). Type input in the input box below the terminal."
+			}
+			return RunResponse{
+				Success: false,
+				Output:  stdout.String(),
+				Error:   msg,
+			}
+		}
+		return RunResponse{
+			Success: false,
+			Output:  stdout.String(),
+			Error:   stderr.String(),
+		}
+	}
+
+	return RunResponse{Success: true, Output: stdout.String()}
 }

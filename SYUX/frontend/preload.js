@@ -2,9 +2,9 @@ const { contextBridge } = require('electron');
 const http = require('http');
 
 contextBridge.exposeInMainWorld('syuxAPI', {
-  runCode: (code, language) => {
+  runCode: (code, language, input) => {
     return new Promise((resolve, reject) => {
-      const data = JSON.stringify({ code, language });
+      const data = JSON.stringify({ code, language, input });
       const options = {
         hostname: 'localhost',
         port: 9090,

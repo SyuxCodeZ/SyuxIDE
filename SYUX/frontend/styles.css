@@ -95,9 +95,49 @@ body {
 }
 
 #terminal-container {
-  height: 220px;
+  height: 200px;
   flex-shrink: 0;
   background: #1e1e1e;
   border-top: 1px solid #3c3c3c;
   padding: 4px;
+}
+
+#input-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: #252526;
+  border-top: 1px solid #3c3c3c;
+  flex-shrink: 0;
+}
+
+#input-label {
+  font-size: 12px;
+  color: #888;
+  font-family: Consolas, monospace;
+  white-space: nowrap;
+}
+
+#input-box {
+  flex: 1;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border: 1px solid #3c3c3c;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  resize: none;
+  outline: none;
+  height: 28px;
+  line-height: 18px;
+}
+
+#input-box:focus {
+  border-color: #007acc;
+}
+
+#input-box::placeholder {
+  color: #555;
 }

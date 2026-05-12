@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
   async function handleRun() {
     const code = getEditorCode();
     const language = langSelect.value;
+    const input = document.getElementById('input-box').value;
 
     if (!code.trim()) {
       writeToTerminal('Error: No code to run\r\n', true);
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
     writeToTerminal(`[${language.toUpperCase()}] Running...\r\n`);
 
     try {
-      const result = await window.syuxAPI.runCode(code, language);
+      const result = await window.syuxAPI.runCode(code, language, input);
 
       writeToTerminal('\r\n');
 
