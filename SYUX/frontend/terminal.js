@@ -1,57 +1,31 @@
-let terminal;
-let fitAddon;
+const outputEl = () => document.getElementById('output');
+
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 function initTerminal() {
-  try {
-    if (typeof Terminal === 'undefined') {
-      console.error('xterm.js not loaded');
-      return;
-    }
-    if (typeof FitAddon === 'undefined') {
-      console.error('xterm-addon-fit not loaded');
-    }
-
-    fitAddon = new FitAddon();
-
-    terminal = new Terminal({
-      fontSize: 13,
-      fontFamily: 'Cascadia Code, Fira Code, Consolas, monospace',
-      theme: {
-        background: '#1e1e1e',
-        foreground: '#d4d4d4',
-        cursor: '#aeafad',
-        selectionBackground: '#264f78'
-      },
-      cursorBlink: true,
-      cursorStyle: 'block',
-      allowTransparency: false,
-      scrollback: 10000
-    });
-
-    terminal.loadAddon(fitAddon);
-    terminal.open(document.getElementById('terminal-container'));
-    fitAddon.fit();
-
-    terminal.write('SYUX IDE Terminal v0.1.0\r\n');
-    terminal.write('Ready. Write code and click Run.\r\n\r\n');
-  } catch (e) {
-    console.error('Terminal init failed:', e);
+  const el = outputEl();
+  if (el) {
+    el.textContent = 'SYUX IDE Terminal v0.1.0\nReady. Write code and click Run.\n\n';
   }
 }
 
 function writeToTerminal(text, isError) {
-  if (!terminal) return;
+  const el = outputEl();
+  if (!el) return;
+  const escaped = escapeHtml(text);
   if (isError) {
-    terminal.write('\x1b[31m' + text.replace(/\n/g, '\r\n') + '\x1b[0m');
+    el.innerHTML += '<span class="error">' + escaped + '</span>';
   } else {
-    terminal.write(text.replace(/\n/g, '\r\n'));
+    el.innerHTML += escaped;
   }
+  el.scrollTop = el.scrollHeight;
 }
 
 function clearTerminal() {
-  if (terminal) terminal.clear();
+  const el = outputEl();
+  if (el) el.innerHTML = '';
 }
 
-function resizeTerminal() {
-  if (fitAddon) fitAddon.fit();
-}
+function resizeTerminal() {}

@@ -6,7 +6,6 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://127.0.0.1:9090 http://localhost:9090;">
   <title>SYUX IDE</title>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="../node_modules/xterm/css/xterm.css" />
 </head>
 <body>
   <div id="topbar">
@@ -23,7 +22,7 @@
     <div id="editor-container"></div>
   </div>
 
-  <div id="terminal-container"></div>
+  <pre id="output" readonly></pre>
 
   <div id="input-area">
     <span id="input-label">stdin:</span>
@@ -31,8 +30,6 @@
   </div>
 
   <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
-  <script src="../node_modules/xterm/lib/xterm.js"></script>
-  <script src="../node_modules/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
   <script src="editor.js"></script>
   <script src="terminal.js"></script>
   <script src="renderer.js"></script>

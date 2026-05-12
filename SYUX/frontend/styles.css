@@ -94,12 +94,25 @@ body {
   overflow: hidden;
 }
 
-#terminal-container {
-  height: 200px;
+#output {
   flex-shrink: 0;
+  height: 200px;
   background: #1e1e1e;
   border-top: 1px solid #3c3c3c;
-  padding: 4px;
+  padding: 8px 12px;
+  margin: 0;
+  font-family: Consolas, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #d4d4d4;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  user-select: text;
+}
+
+#output .error {
+  color: #f48771;
 }
 
 #input-area {
